@@ -1,13 +1,13 @@
 let contexto: AudioContext | null = null;
 
-export function prepararAudio() {
+export function prepararAudio(){
   contexto ??= new AudioContext();
-  if (contexto.state === "suspended") contexto.resume();
+  if(contexto.state === "suspended") contexto.resume();
 }
 
-export function tocarAlerta() {
+export function tocarAlerta(){
   prepararAudio();
-  if (!contexto) return;
+  if(!contexto) return;
 
   const oscilador = contexto.createOscillator();
   const volume = contexto.createGain();

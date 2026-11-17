@@ -1,4 +1,4 @@
-export default async function Footer() {
+export default async function Footer(){
   "use cache";
 
   return (

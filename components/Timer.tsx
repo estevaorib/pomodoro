@@ -1,7 +1,8 @@
 "use client";
 
+import { usePresetSelecionado } from "@/hooks/usePresets";
 import { useSessao } from "@/hooks/useSessao";
-import { presetPadrao } from "@/lib/preset";
+import { presetPadrao, type ParametrosPreset } from "@/lib/preset";
 import { duracaoFase, tempoRestante, type Fase } from "@/lib/sessao";
 
 const RAIO = 126;
@@ -24,41 +25,45 @@ const cores: Record<Fase, { texto: string; borda: string; anel: string }> = {
 const botaoIcone =
   "flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-on-surface-variant transition-colors hover:border-outline-variant hover:bg-surface-container hover:text-on-surface disabled:pointer-events-none disabled:opacity-40";
 
-function formatar(ms: number) {
+function formatar(ms: number){
   const segundos = Math.ceil(ms / 1000);
   const minutos = Math.floor(segundos / 60);
   return `${String(minutos).padStart(2, "0")}:${String(segundos % 60).padStart(2, "0")}`;
 }
 
-export default function Timer() {
+export default function Timer(){
   const { sessao, agora, iniciar, pausar, retomar, pularFase, reiniciarCiclos, encerrar } = useSessao();
+  const selecionado = usePresetSelecionado();
 
-  const preset = sessao?.snapshotPreset ?? presetPadrao;
   const ativa = sessao !== null && sessao.status !== "concluida";
+  const preset: ParametrosPreset = ativa ? sessao.snapshotPreset : (selecionado ?? presetPadrao);
+  const semPreset = !ativa && selecionado === null;
   const fase = ativa ? sessao.faseAtual : "foco";
   const duracao = duracaoFase(preset, fase);
   const restante = ativa ? tempoRestante(sessao, agora) : duracao;
-  const ciclo = sessao?.cicloAtual ?? 1;
+  const ciclo = ativa ? sessao.cicloAtual : 1;
   const totalCiclos = preset.ciclosAntesPausaLonga;
 
   let rotulo = preset.nome;
-  if (ativa) rotulo = `${nomes[fase]} • ${preset.nome}`;
-  else if (sessao?.status === "concluida") rotulo = "Sessão concluída";
+  if(ativa) rotulo = `${nomes[fase]} • ${preset.nome}`;
+  else if(sessao?.status === "concluida") rotulo = "Sessão concluída";
+  else if(semPreset) rotulo = "Nenhum preset";
 
-  function alternar() {
-    if (!ativa) iniciar(presetPadrao);
-    else if (sessao.status === "emAndamento") pausar();
+  function alternar(){
+    if(!ativa){
+      if(selecionado) iniciar(selecionado);
+    } else if(sessao.status === "emAndamento") pausar();
     else retomar();
   }
 
-  function confirmarReinicio() {
-    if (confirm("Reiniciar a contagem de ciclos? A sessão volta para o foco do ciclo 1.")) {
+  function confirmarReinicio(){
+    if(confirm("Reiniciar a contagem de ciclos? A sessão volta para o foco do ciclo 1.")){
       reiniciarCiclos();
     }
   }
 
-  function confirmarEncerramento() {
-    if (confirm("Encerrar a sessão atual?")) encerrar();
+  function confirmarEncerramento(){
+    if(confirm("Encerrar a sessão atual?")) encerrar();
   }
 
   return (
@@ -118,7 +123,7 @@ export default function Timer() {
                   <span
                     key={i}
                     className={`h-2 w-2 rounded-full ${
-                      i < ciclo && sessao ? "bg-primary shadow-[0_0_6px_rgba(90,240,179,0.7)]" : "bg-surface-container-highest"
+                      i < ciclo && ativa ? "bg-primary shadow-[0_0_6px_rgba(90,240,179,0.7)]" : "bg-surface-container-highest"
                     }`}
                   />
                 ))}
@@ -137,7 +142,8 @@ export default function Timer() {
           <button
             type="button"
             onClick={alternar}
-            className="flex h-12 items-center gap-2 rounded-full bg-primary-container px-8 max-sm:px-6 text-sm font-semibold text-on-primary-container shadow-[0_0_16px_rgba(52,211,153,0.2)] transition-all duration-200 hover:bg-primary"
+            disabled={semPreset}
+            className="flex h-12 items-center gap-2 rounded-full bg-primary-container px-8 max-sm:px-6 text-sm font-semibold text-on-primary-container shadow-[0_0_16px_rgba(52,211,153,0.2)] transition-all duration-200 hover:bg-primary disabled:pointer-events-none disabled:opacity-40"
           >
             <svg viewBox="0 0 24 24" className="size-5 fill-current">
               <path d={ativa && sessao.status === "emAndamento" ? "M6 19h4V5H6v14zm8-14v14h4V5h-4z" : "M8 5v14l11-7z"} />
@@ -163,6 +169,16 @@ export default function Timer() {
             </svg>
           </button>
         </div>
+
+        {semPreset && (
+          <p className="mt-4 text-xs text-on-surface-variant">
+            Cadastre um preset em{" "}
+            <a href="#presets" className="text-primary hover:underline">
+              Meus Presets
+            </a>{" "}
+            para iniciar.
+          </p>
+        )}
       </div>
     </section>
   );

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description: "Temporizador de foco para ciclos de estudo",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: LayoutProps<"/">){
   return (
     <html
       lang="pt-BR"

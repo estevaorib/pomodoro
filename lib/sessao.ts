@@ -1,4 +1,4 @@
-import type { Preset, SnapshotPreset } from "./preset";
+import type { Preset, ParametrosPreset } from "./preset";
 
 export type Fase = "foco" | "pausaCurta" | "pausaLonga";
 export type StatusSessao = "emAndamento" | "pausada" | "concluida";
@@ -6,7 +6,7 @@ export type StatusSessao = "emAndamento" | "pausada" | "concluida";
 export type SessaoAtiva = {
   id: string;
   presetId: string;
-  snapshotPreset: SnapshotPreset;
+  snapshotPreset: ParametrosPreset;
   faseAtual: Fase;
   cicloAtual: number;
   status: StatusSessao;
@@ -20,17 +20,17 @@ export type SessaoAtiva = {
 
 const MINUTO = 60_000;
 
-export function duracaoFase(snapshot: SnapshotPreset, fase: Fase) {
-  if (fase === "foco") return snapshot.tempoFocoMin * MINUTO;
-  if (fase === "pausaCurta") return snapshot.tempoPausaCurtaMin * MINUTO;
+export function duracaoFase(snapshot: ParametrosPreset, fase: Fase){
+  if(fase === "foco") return snapshot.tempoFocoMin * MINUTO;
+  if(fase === "pausaCurta") return snapshot.tempoPausaCurtaMin * MINUTO;
   return snapshot.tempoPausaLongaMin * MINUTO;
 }
 
-function pausaDoCiclo(sessao: SessaoAtiva): Fase {
+function pausaDoCiclo(sessao: SessaoAtiva): Fase{
   return sessao.cicloAtual === sessao.snapshotPreset.ciclosAntesPausaLonga ? "pausaLonga" : "pausaCurta";
 }
 
-function entrarNaFase(sessao: SessaoAtiva, fase: Fase, ciclo: number, inicio: number): SessaoAtiva {
+function entrarNaFase(sessao: SessaoAtiva, fase: Fase, ciclo: number, inicio: number): SessaoAtiva{
   const duracao = duracaoFase(sessao.snapshotPreset, fase);
   const pausada = sessao.status === "pausada";
 
@@ -46,7 +46,7 @@ function entrarNaFase(sessao: SessaoAtiva, fase: Fase, ciclo: number, inicio: nu
   };
 }
 
-function concluir(sessao: SessaoAtiva, agora: number): SessaoAtiva {
+function concluir(sessao: SessaoAtiva, agora: number): SessaoAtiva{
   return {
     ...sessao,
     status: "concluida",
@@ -56,16 +56,16 @@ function concluir(sessao: SessaoAtiva, agora: number): SessaoAtiva {
   };
 }
 
-function concluirFase(sessao: SessaoAtiva, inicioProxima: number) {
-  if (sessao.faseAtual === "foco") {
+function concluirFase(sessao: SessaoAtiva, inicioProxima: number){
+  if(sessao.faseAtual === "foco"){
     return entrarNaFase(sessao, pausaDoCiclo(sessao), sessao.cicloAtual, inicioProxima);
   }
-  if (sessao.faseAtual === "pausaLonga") return concluir(sessao, inicioProxima);
+  if(sessao.faseAtual === "pausaLonga") return concluir(sessao, inicioProxima);
   return entrarNaFase(sessao, "foco", sessao.cicloAtual + 1, inicioProxima);
 }
 
-export function iniciarSessao(preset: Preset, agora: number): SessaoAtiva {
-  const snapshotPreset: SnapshotPreset = {
+export function iniciarSessao(preset: Preset, agora: number): SessaoAtiva{
+  const snapshotPreset: ParametrosPreset = {
     nome: preset.nome,
     tempoFocoMin: preset.tempoFocoMin,
     tempoPausaCurtaMin: preset.tempoPausaCurtaMin,
@@ -89,8 +89,8 @@ export function iniciarSessao(preset: Preset, agora: number): SessaoAtiva {
   };
 }
 
-export function pausarSessao(sessao: SessaoAtiva, agora: number): SessaoAtiva {
-  if (sessao.status !== "emAndamento") return sessao;
+export function pausarSessao(sessao: SessaoAtiva, agora: number): SessaoAtiva{
+  if(sessao.status !== "emAndamento") return sessao;
 
   return {
     ...sessao,
@@ -101,8 +101,8 @@ export function pausarSessao(sessao: SessaoAtiva, agora: number): SessaoAtiva {
   };
 }
 
-export function retomarSessao(sessao: SessaoAtiva, agora: number): SessaoAtiva {
-  if (sessao.status !== "pausada") return sessao;
+export function retomarSessao(sessao: SessaoAtiva, agora: number): SessaoAtiva{
+  if(sessao.status !== "pausada") return sessao;
 
   return {
     ...sessao,
@@ -114,23 +114,23 @@ export function retomarSessao(sessao: SessaoAtiva, agora: number): SessaoAtiva {
   };
 }
 
-export function pularFase(sessao: SessaoAtiva, agora: number): SessaoAtiva {
-  if (sessao.status === "concluida") return sessao;
-  if (sessao.faseAtual === "foco") return entrarNaFase(sessao, pausaDoCiclo(sessao), sessao.cicloAtual, agora);
-  if (sessao.faseAtual === "pausaLonga") return concluir(sessao, agora);
+export function pularFase(sessao: SessaoAtiva, agora: number): SessaoAtiva{
+  if(sessao.status === "concluida") return sessao;
+  if(sessao.faseAtual === "foco") return entrarNaFase(sessao, pausaDoCiclo(sessao), sessao.cicloAtual, agora);
+  if(sessao.faseAtual === "pausaLonga") return concluir(sessao, agora);
   return entrarNaFase(sessao, "foco", sessao.cicloAtual, agora);
 }
 
-export function reiniciarCiclos(sessao: SessaoAtiva, agora: number): SessaoAtiva {
-  if (sessao.status === "concluida") return sessao;
+export function reiniciarCiclos(sessao: SessaoAtiva, agora: number): SessaoAtiva{
+  if(sessao.status === "concluida") return sessao;
   return entrarNaFase(sessao, "foco", 1, agora);
 }
 
-export function sincronizar(sessao: SessaoAtiva, agora: number) {
+export function sincronizar(sessao: SessaoAtiva, agora: number){
   let atual = sessao;
   let fasesConcluidas = 0;
 
-  while (atual.status === "emAndamento" && agora >= atual.fimFasePrevistoEm) {
+  while(atual.status === "emAndamento" && agora >= atual.fimFasePrevistoEm){
     atual = concluirFase(atual, atual.fimFasePrevistoEm);
     fasesConcluidas++;
   }
@@ -138,9 +138,9 @@ export function sincronizar(sessao: SessaoAtiva, agora: number) {
   return { sessao: atual, fasesConcluidas };
 }
 
-export function tempoRestante(sessao: SessaoAtiva, agora: number) {
-  if (sessao.status === "concluida") return 0;
-  if (sessao.status === "pausada") return sessao.tempoRestanteAoPausarMs ?? 0;
+export function tempoRestante(sessao: SessaoAtiva, agora: number){
+  if(sessao.status === "concluida") return 0;
+  if(sessao.status === "pausada") return sessao.tempoRestanteAoPausarMs ?? 0;
 
   const duracao = duracaoFase(sessao.snapshotPreset, sessao.faseAtual);
   return Math.min(duracao, Math.max(0, sessao.fimFasePrevistoEm - agora));
