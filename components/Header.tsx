@@ -11,7 +11,7 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <a href="#" className="group flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(90,240,179,0.5)] transition-transform duration-300 group-hover:scale-125" />
-          <span className="text-sm font-semibold tracking-tight text-on-surface">pomodoro</span>
+          <span className="text-sm font-semibold tracking-tight text-on-surface">&lt;pomodoro/&gt;</span>
         </a>
 
         <nav className="flex items-center gap-6 text-xs font-medium text-on-surface-variant max-md:hidden">
