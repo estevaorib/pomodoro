@@ -31,6 +31,10 @@ export function substituirTarefa(tarefa: Tarefa){
   salvar(obterTarefas().map((atual) => (atual.id === tarefa.id ? tarefa : atual)));
 }
 
+export function removerTarefa(id: string){
+  salvar(obterTarefas().filter((tarefa) => tarefa.id !== id));
+}
+
 export function useTarefas(){
   const tarefas = useSyncExternalStore(assinar, obterTarefas, () => null);
   return useMemo(() => (tarefas ? ordenarTarefas(tarefas) : null), [tarefas]);

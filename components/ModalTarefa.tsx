@@ -11,8 +11,10 @@ import {
   nomesPrioridade,
   paraFormulario,
   prioridadesTarefa,
+  tamanhoTitulo,
   validarTarefa,
   valoresPadraoTarefa,
+  type ErrosTarefa,
   type FormularioTarefa,
   type Tarefa,
 } from "@/lib/tarefa";
@@ -52,19 +54,29 @@ export default function ModalTarefa({ tarefa, rotuloAcessivel, className, childr
   const id = useId();
   const [formulario, setFormulario] = useState(formularioInicial);
   const [tentouSalvar, setTentouSalvar] = useState(false);
+  const [alterados, setAlterados] = useState<Partial<Record<keyof FormularioTarefa, boolean>>>({});
   const [erroAoSalvar, setErroAoSalvar] = useState("");
 
-  const erros = tentouSalvar ? validarTarefa(formulario) : {};
+  const errosValidacao = validarTarefa(formulario);
+  const invalido = Object.keys(errosValidacao).length > 0;
+  const erros: ErrosTarefa = {};
+  for(const campo of Object.keys(errosValidacao) as (keyof FormularioTarefa)[]){
+    if(tentouSalvar || alterados[campo]) erros[campo] = errosValidacao[campo];
+  }
+
+  const caracteresTitulo = tamanhoTitulo(formulario.titulo);
   const idTitulo = `${id}-titulo`;
   const idErro = (campo: keyof FormularioTarefa) => `${id}-${campo}-erro`;
 
   function alterar(campo: keyof FormularioTarefa, valor: string){
     setFormulario((atual) => ({ ...atual, [campo]: valor }));
+    setAlterados((atual) => ({ ...atual, [campo]: true }));
   }
 
   function abrir(){
     setFormulario(tarefa ? paraFormulario(tarefa) : formularioInicial);
     setTentouSalvar(false);
+    setAlterados({});
     setErroAoSalvar("");
     modal.current?.showModal();
     campoTitulo.current?.focus();
@@ -74,9 +86,8 @@ export default function ModalTarefa({ tarefa, rotuloAcessivel, className, childr
     evento.preventDefault();
     setTentouSalvar(true);
 
-    const errosAtuais = validarTarefa(formulario);
-    if(Object.keys(errosAtuais).length > 0){
-      if(errosAtuais.titulo) campoTitulo.current?.focus();
+    if(invalido){
+      if(errosValidacao.titulo) campoTitulo.current?.focus();
       return;
     }
 
@@ -119,13 +130,20 @@ export default function ModalTarefa({ tarefa, rotuloAcessivel, className, childr
           </div>
 
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-on-surface-variant">
-              Título · {limitesTitulo.min} a {limitesTitulo.max} caracteres
+            <span className="flex items-center justify-between gap-2 text-[11px] font-medium text-on-surface-variant">
+              <span>
+                Título · {limitesTitulo.min} a {limitesTitulo.max} caracteres
+              </span>
+              <span
+                aria-hidden="true"
+                className={`font-mono ${caracteresTitulo > limitesTitulo.max ? "text-error" : ""}`}
+              >
+                {caracteresTitulo}/{limitesTitulo.max}
+              </span>
             </span>
             <input
               ref={campoTitulo}
               type="text"
-              maxLength={limitesTitulo.max}
               placeholder="Ex: Resolver a lista de exercícios"
               value={formulario.titulo}
               onChange={(e) => alterar("titulo", e.target.value)}
@@ -182,7 +200,8 @@ export default function ModalTarefa({ tarefa, rotuloAcessivel, className, childr
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-primary-container"
+              aria-disabled={invalido}
+              className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-on-primary transition-colors hover:bg-primary-container aria-disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:hover:bg-primary"
             >
               Salvar Tarefa
             </button>

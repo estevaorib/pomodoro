@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
 
 type Props = {
   titulo: string;
@@ -8,6 +8,7 @@ type Props = {
   rotuloConfirmar: string;
   onConfirmar: () => void;
   title?: string;
+  rotuloAcessivel?: string;
   className: string;
   children: ReactNode;
 };
@@ -18,10 +19,12 @@ export default function BotaoConfirmacao({
   rotuloConfirmar,
   onConfirmar,
   title,
+  rotuloAcessivel,
   className,
   children,
 }: Props){
   const modal = useRef<HTMLDialogElement>(null);
+  const id = useId();
 
   function confirmar(){
     modal.current?.close();
@@ -30,16 +33,28 @@ export default function BotaoConfirmacao({
 
   return (
     <>
-      <button type="button" title={title} onClick={() => modal.current?.showModal()} className={className}>
+      <button
+        type="button"
+        title={title}
+        aria-label={rotuloAcessivel}
+        onClick={() => modal.current?.showModal()}
+        className={className}
+      >
         {children}
       </button>
 
       <dialog
         ref={modal}
+        aria-labelledby={`${id}-titulo`}
+        aria-describedby={`${id}-mensagem`}
         className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-outline-variant bg-surface-container p-6 text-on-surface backdrop:bg-surface-container-lowest/80 backdrop:backdrop-blur-sm"
       >
-        <h3 className="text-base font-semibold">{titulo}</h3>
-        <p className="mt-3 text-xs leading-relaxed text-on-surface-variant">{mensagem}</p>
+        <h3 id={`${id}-titulo`} className="text-base font-semibold">
+          {titulo}
+        </h3>
+        <p id={`${id}-mensagem`} className="mt-3 text-xs leading-relaxed break-words text-on-surface-variant">
+          {mensagem}
+        </p>
 
         <div className="mt-6 flex items-center justify-end gap-2">
           <button

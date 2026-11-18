@@ -53,8 +53,12 @@ const ordemEstado: Record<EstadoTarefa, number> = {
   backlog: 4,
 };
 
+export function tamanhoTitulo(titulo: string){
+  return Array.from(titulo.trim()).length;
+}
+
 export function tituloValido(titulo: string){
-  const tamanho = titulo.trim().length;
+  const tamanho = tamanhoTitulo(titulo);
   return tamanho >= limitesTitulo.min && tamanho <= limitesTitulo.max;
 }
 
@@ -68,11 +72,11 @@ export function prioridadeValida(valor: unknown): valor is PrioridadeTarefa{
 
 export function validarTarefa(formulario: FormularioTarefa){
   const erros: ErrosTarefa = {};
-  const tamanhoTitulo = formulario.titulo.trim().length;
+  const tamanho = tamanhoTitulo(formulario.titulo);
 
-  if(tamanhoTitulo < limitesTitulo.min){
+  if(tamanho < limitesTitulo.min){
     erros.titulo = "Informe o título da tarefa.";
-  } else if(tamanhoTitulo > limitesTitulo.max){
+  } else if(tamanho > limitesTitulo.max){
     erros.titulo = `O título deve ter no máximo ${limitesTitulo.max} caracteres.`;
   }
 

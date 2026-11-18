@@ -1,7 +1,9 @@
 "use client";
 
-import { useTarefas } from "@/hooks/useTarefas";
+import { useRef, useState } from "react";
+import { removerTarefa, useTarefas } from "@/hooks/useTarefas";
 import { nomesEstado, nomesPrioridade } from "@/lib/tarefa";
+import BotaoConfirmacao from "./BotaoConfirmacao";
 import ModalTarefa from "./ModalTarefa";
 
 const estiloBotao =
@@ -9,15 +11,33 @@ const estiloBotao =
 
 export default function ListaTarefas(){
   const tarefas = useTarefas();
+  const tituloSecao = useRef<HTMLHeadingElement>(null);
+  const [erro, setErro] = useState("");
+
+  function excluir(id: string){
+    try{
+      removerTarefa(id);
+      setErro("");
+      tituloSecao.current?.focus();
+    } catch{
+      setErro("Não foi possível excluir a tarefa no navegador.");
+    }
+  }
 
   return (
     <section id="tarefas" aria-labelledby="titulo-lista-tarefas" className="border-t border-outline-variant/60 py-10">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 id="titulo-lista-tarefas" className="text-xl font-semibold text-on-surface">
+        <h2 id="titulo-lista-tarefas" ref={tituloSecao} tabIndex={-1} className="text-xl font-semibold text-on-surface">
           Tarefas
         </h2>
         <ModalTarefa className={estiloBotao}>Nova tarefa</ModalTarefa>
       </div>
+
+      {erro && (
+        <p role="alert" className="mb-3 text-xs text-error">
+          {erro}
+        </p>
+      )}
 
       {tarefas?.length === 0 && <p className="text-xs text-on-surface-variant">Nenhuma tarefa cadastrada.</p>}
 
@@ -35,9 +55,21 @@ export default function ListaTarefas(){
                 Estado: {nomesEstado[tarefa.estado]} · Prioridade: {nomesPrioridade[tarefa.prioridade]}
               </p>
             </div>
-            <ModalTarefa tarefa={tarefa} rotuloAcessivel={`Editar tarefa: ${tarefa.titulo}`} className={estiloBotao}>
-              Editar
-            </ModalTarefa>
+            <div className="flex shrink-0 items-center gap-2">
+              <ModalTarefa tarefa={tarefa} rotuloAcessivel={`Editar tarefa: ${tarefa.titulo}`} className={estiloBotao}>
+                Editar
+              </ModalTarefa>
+              <BotaoConfirmacao
+                titulo="Excluir tarefa?"
+                mensagem={`A tarefa "${tarefa.titulo}" será excluída permanentemente.`}
+                rotuloConfirmar="Excluir"
+                onConfirmar={() => excluir(tarefa.id)}
+                rotuloAcessivel={`Excluir tarefa: ${tarefa.titulo}`}
+                className={`${estiloBotao} hover:border-error/40 hover:text-error`}
+              >
+                Excluir
+              </BotaoConfirmacao>
+            </div>
           </li>
         ))}
       </ul>
