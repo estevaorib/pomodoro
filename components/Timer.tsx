@@ -4,6 +4,7 @@ import { usePresetSelecionado } from "@/hooks/usePresets";
 import { useSessao } from "@/hooks/useSessao";
 import { presetPadrao, type ParametrosPreset } from "@/lib/preset";
 import { duracaoFase, tempoRestante, type Fase } from "@/lib/sessao";
+import BotaoConfirmacao from "./BotaoConfirmacao";
 
 const RAIO = 126;
 const CIRCUNFERENCIA = 2 * Math.PI * RAIO;
@@ -56,15 +57,7 @@ export default function Timer(){
     else retomar();
   }
 
-  function confirmarReinicio(){
-    if(confirm("Reiniciar a contagem de ciclos? A sessão volta para o foco do ciclo 1.")){
-      reiniciarCiclos();
-    }
-  }
-
-  function confirmarEncerramento(){
-    if(confirm("Encerrar a sessão atual?")) encerrar();
-  }
+  const posicaoAtual = `Você está no ciclo ${ciclo} de ${totalCiclos} (${nomes[fase]}).`;
 
   return (
     <section id="temporizador" className="flex min-h-[calc(100vh-4rem)] w-full flex-col items-center px-6 py-10 max-sm:px-4">
@@ -133,11 +126,21 @@ export default function Timer(){
         </div>
 
         <div className="mt-8 flex items-center justify-center gap-3 max-sm:gap-2">
-          <button type="button" title="Reiniciar ciclos" disabled={!ativa} onClick={confirmarReinicio} className={botaoIcone}>
-            <svg viewBox="0 0 24 24" className="size-5 fill-current">
+          <BotaoConfirmacao
+            titulo="Reiniciar ciclos?"
+            mensagem={`${posicaoAtual} A sessão volta para o foco do ciclo 1, com o tempo cheio. A contagem de ciclos e o tempo já corrido da fase atual serão perdidos.`}
+            rotuloConfirmar="Reiniciar ciclos"
+            rotuloCancelar="Manter progresso"
+            onConfirmar={reiniciarCiclos}
+            title="Reiniciar ciclos"
+            rotuloAcessivel="Reiniciar ciclos"
+            disabled={!ativa}
+            className={botaoIcone}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5 fill-current">
               <path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93 0-4.42-3.58-8-8-8zm-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34C4.9 8.79 4 10.79 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91z" />
             </svg>
-          </button>
+          </BotaoConfirmacao>
 
           <button
             type="button"
@@ -157,17 +160,21 @@ export default function Timer(){
             </svg>
           </button>
 
-          <button
-            type="button"
+          <BotaoConfirmacao
+            titulo="Encerrar sessão?"
+            mensagem={`${posicaoAtual} O timer para e a sessão atual é descartada. A contagem de ciclos e o tempo já corrido serão perdidos e não poderão ser recuperados.`}
+            rotuloConfirmar="Encerrar sessão"
+            rotuloCancelar="Manter sessão"
+            onConfirmar={encerrar}
             title="Encerrar sessão"
+            rotuloAcessivel="Encerrar sessão"
             disabled={!ativa}
-            onClick={confirmarEncerramento}
             className={`${botaoIcone} hover:border-error/20 hover:bg-error-container/20 hover:text-error`}
           >
-            <svg viewBox="0 0 24 24" className="size-5 fill-current">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5 fill-current">
               <path d="M6 6h12v12H6z" />
             </svg>
-          </button>
+          </BotaoConfirmacao>
         </div>
 
         {semPreset && (

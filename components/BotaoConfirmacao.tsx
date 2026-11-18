@@ -6,9 +6,11 @@ type Props = {
   titulo: string;
   mensagem: string;
   rotuloConfirmar: string;
+  rotuloCancelar?: string;
   onConfirmar: () => void;
   title?: string;
   rotuloAcessivel?: string;
+  disabled?: boolean;
   className: string;
   children: ReactNode;
 };
@@ -17,9 +19,11 @@ export default function BotaoConfirmacao({
   titulo,
   mensagem,
   rotuloConfirmar,
+  rotuloCancelar = "Cancelar",
   onConfirmar,
   title,
   rotuloAcessivel,
+  disabled,
   className,
   children,
 }: Props){
@@ -37,6 +41,7 @@ export default function BotaoConfirmacao({
         type="button"
         title={title}
         aria-label={rotuloAcessivel}
+        disabled={disabled}
         onClick={() => modal.current?.showModal()}
         className={className}
       >
@@ -62,7 +67,7 @@ export default function BotaoConfirmacao({
             onClick={() => modal.current?.close()}
             className="rounded-lg px-3.5 py-1.5 text-xs text-on-surface transition-colors hover:bg-surface-container-low"
           >
-            Cancelar
+            {rotuloCancelar}
           </button>
           <button
             type="button"
