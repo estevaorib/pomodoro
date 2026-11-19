@@ -1,10 +1,11 @@
 import ModalPreset from "./ModalPreset";
+import { BotaoPainel, type NomePainel } from "./PaineisContexto";
 
-const links = [
+const links: ({ href: string; label: string } | { painel: NomePainel; label: string })[] = [
   { href: "#temporizador", label: "Temporizador" },
-  { href: "#tarefas", label: "Tarefas" },
-  { href: "#presets", label: "Presets" },
-  { href: "#guia", label: "Guia" },
+  { painel: "tarefas", label: "Tarefas" },
+  { painel: "presets", label: "Presets" },
+  { painel: "guia", label: "Guia" },
 ];
 
 export default function Header(){
@@ -16,16 +17,24 @@ export default function Header(){
           <span className="text-sm font-semibold tracking-tight text-on-surface">&lt;pomodoro/&gt;</span>
         </a>
 
-        <nav className="flex items-center gap-6 text-xs font-medium text-on-surface-variant max-md:hidden">
-          {links.map((link, i) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className={`transition-colors hover:text-primary ${i === 0 ? "font-semibold text-on-surface" : ""}`}
-            >
-              {link.label}
-            </a>
-          ))}
+        <nav className="flex items-center gap-6 text-xs font-medium text-on-surface-variant max-sm:gap-4">
+          {links.map((link, i) => {
+            const estilo = `transition-colors hover:text-primary ${i === 0 ? "font-semibold text-on-surface" : ""}`;
+
+            if("painel" in link){
+              return (
+                <BotaoPainel key={link.painel} nome={link.painel} className={`cursor-pointer ${estilo}`}>
+                  {link.label}
+                </BotaoPainel>
+              );
+            }
+
+            return (
+              <a key={link.href} href={link.href} className={`max-md:hidden ${estilo}`}>
+                {link.label}
+              </a>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-3">

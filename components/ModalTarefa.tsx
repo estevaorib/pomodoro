@@ -1,25 +1,17 @@
 "use client";
 
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { adicionarTarefa, substituirTarefa } from "@/hooks/useTarefas";
+import { useId, useRef, type FormEvent, type ReactNode } from "react";
+import { useFormularioTarefa } from "@/hooks/useFormularioTarefa";
 import {
-  criarTarefa,
-  editarTarefa,
   estadosTarefa,
   limitesTitulo,
   nomesEstado,
   nomesPrioridade,
-  paraFormulario,
   prioridadesTarefa,
   tamanhoTitulo,
-  validarTarefa,
-  valoresPadraoTarefa,
-  type ErrosTarefa,
   type FormularioTarefa,
   type Tarefa,
 } from "@/lib/tarefa";
-
-const formularioInicial: FormularioTarefa = paraFormulario(valoresPadraoTarefa);
 
 const camposSelecao: {
   campo: "estado" | "prioridade";
@@ -52,52 +44,32 @@ export default function ModalTarefa({ tarefa, rotuloAcessivel, className, childr
   const modal = useRef<HTMLDialogElement>(null);
   const campoTitulo = useRef<HTMLInputElement>(null);
   const id = useId();
-  const [formulario, setFormulario] = useState(formularioInicial);
-  const [tentouSalvar, setTentouSalvar] = useState(false);
-  const [alterados, setAlterados] = useState<Partial<Record<keyof FormularioTarefa, boolean>>>({});
-  const [erroAoSalvar, setErroAoSalvar] = useState("");
-
-  const errosValidacao = validarTarefa(formulario);
-  const invalido = Object.keys(errosValidacao).length > 0;
-  const erros: ErrosTarefa = {};
-  for(const campo of Object.keys(errosValidacao) as (keyof FormularioTarefa)[]){
-    if(tentouSalvar || alterados[campo]) erros[campo] = errosValidacao[campo];
-  }
+  const {
+    formulario,
+    erros,
+    errosValidacao,
+    invalido,
+    erroAoSalvar,
+    alterar,
+    reiniciar,
+    salvar: salvarFormulario,
+  } = useFormularioTarefa(tarefa);
 
   const caracteresTitulo = tamanhoTitulo(formulario.titulo);
   const idTitulo = `${id}-titulo`;
   const idErro = (campo: keyof FormularioTarefa) => `${id}-${campo}-erro`;
 
-  function alterar(campo: keyof FormularioTarefa, valor: string){
-    setFormulario((atual) => ({ ...atual, [campo]: valor }));
-    setAlterados((atual) => ({ ...atual, [campo]: true }));
-  }
-
   function abrir(){
-    setFormulario(tarefa ? paraFormulario(tarefa) : formularioInicial);
-    setTentouSalvar(false);
-    setAlterados({});
-    setErroAoSalvar("");
+    reiniciar();
     modal.current?.showModal();
     campoTitulo.current?.focus();
   }
 
   function salvar(evento: FormEvent<HTMLFormElement>){
     evento.preventDefault();
-    setTentouSalvar(true);
 
-    if(invalido){
-      if(errosValidacao.titulo) campoTitulo.current?.focus();
-      return;
-    }
-
-    try{
-      if(tarefa) substituirTarefa(editarTarefa(tarefa, formulario, Date.now()));
-      else adicionarTarefa(criarTarefa(formulario, Date.now()));
-      modal.current?.close();
-    } catch{
-      setErroAoSalvar("Não foi possível salvar a tarefa no navegador.");
-    }
+    if(salvarFormulario()) modal.current?.close();
+    else if(errosValidacao.titulo) campoTitulo.current?.focus();
   }
 
   return (

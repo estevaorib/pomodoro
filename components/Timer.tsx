@@ -5,6 +5,7 @@ import { useSessao } from "@/hooks/useSessao";
 import { presetPadrao, type ParametrosPreset } from "@/lib/preset";
 import { duracaoFase, tempoRestante, type Fase } from "@/lib/sessao";
 import BotaoConfirmacao from "./BotaoConfirmacao";
+import { BotaoPainel } from "./PaineisContexto";
 
 const RAIO = 126;
 const CIRCUNFERENCIA = 2 * Math.PI * RAIO;
@@ -180,9 +181,9 @@ export default function Timer(){
         {semPreset && (
           <p className="mt-4 text-xs text-on-surface-variant">
             Cadastre um preset em{" "}
-            <a href="#presets" className="text-primary hover:underline">
+            <BotaoPainel nome="presets" className="cursor-pointer text-primary hover:underline">
               Meus Presets
-            </a>{" "}
+            </BotaoPainel>{" "}
             para iniciar.
           </p>
         )}

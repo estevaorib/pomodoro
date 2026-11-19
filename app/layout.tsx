@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { PaineisProvider } from "@/components/PaineisContexto";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -28,9 +29,11 @@ export default function RootLayout({ children }: LayoutProps<"/">){
       className={`${jakarta.variable} ${jetbrainsMono.variable} h-full scroll-smooth antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-on-surface">
-        <Header />
-        {children}
-        <Footer />
+        <PaineisProvider>
+          <Header />
+          {children}
+          <Footer />
+        </PaineisProvider>
       </body>
     </html>
   );
