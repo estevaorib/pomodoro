@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { prepararAudio, tocarAlerta } from "@/lib/alerta";
-import { gravarSessao, lerSessao } from "@/lib/armazenamento";
+import { descartarSessaoSalva, gravarSessao, lerSessao } from "@/lib/armazenamento";
 import type { Preset } from "@/lib/preset";
 import {
   iniciarSessao,
@@ -14,24 +14,45 @@ import {
 
 let sessaoAtual: SessaoAtiva | null = null;
 let carregada = false;
+// Dado salvo ilegível: fica preservado no localStorage até ser descartado ou sobrescrito por uma sessão nova.
+let sessaoCorrompida = false;
 const ouvintes = new Set<() => void>();
+
+function notificar(){
+  ouvintes.forEach((ouvinte) => ouvinte());
+}
 
 function obterSessao(){
   if(!carregada){
     carregada = true;
-    const salva = lerSessao();
-    if(salva){
-      sessaoAtual = sincronizar(salva, Date.now()).sessao;
+    const leitura = lerSessao();
+    if(leitura.tipo === "valida"){
+      sessaoAtual = sincronizar(leitura.sessao, Date.now()).sessao;
       gravarSessao(sessaoAtual);
+    } else if(leitura.tipo === "corrompida"){
+      sessaoCorrompida = true;
     }
   }
   return sessaoAtual;
 }
 
+function obterSessaoCorrompida(){
+  obterSessao();
+  return sessaoCorrompida;
+}
+
 function definirSessao(sessao: SessaoAtiva | null){
   sessaoAtual = sessao;
   gravarSessao(sessao);
-  ouvintes.forEach((ouvinte) => ouvinte());
+  // Depois de gravar (ou remover), a chave não guarda mais o dado corrompido.
+  sessaoCorrompida = false;
+  notificar();
+}
+
+export function descartarSessaoCorrompida(){
+  descartarSessaoSalva();
+  sessaoCorrompida = false;
+  notificar();
 }
 
 function assinar(ouvinte: () => void){
@@ -48,6 +69,10 @@ export function iniciarComPreset(preset: Preset){
 
 export function useSessaoAtual(){
   return useSyncExternalStore(assinar, obterSessao, () => null);
+}
+
+export function useSessaoCorrompida(){
+  return useSyncExternalStore(assinar, obterSessaoCorrompida, () => false);
 }
 
 export function useSessao(){

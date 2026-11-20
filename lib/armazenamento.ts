@@ -42,16 +42,33 @@ function sessaoValida(dados: unknown): dados is SessaoAtiva{
   );
 }
 
-export function lerSessao(): SessaoAtiva | null{
-  try{
-    const salvo = localStorage.getItem(CHAVE_SESSAO);
-    if(!salvo) return null;
+export type LeituraSessao =
+  | { tipo: "ausente" }
+  | { tipo: "valida"; sessao: SessaoAtiva }
+  | { tipo: "corrompida" };
 
-    const dados: unknown = JSON.parse(salvo);
-    return sessaoValida(dados) ? dados : null;
+// "corrompida" = há valor na chave, mas o JSON é inválido ou não passa em sessaoValida.
+export function lerSessao(): LeituraSessao{
+  let salvo: string | null;
+  try{
+    salvo = localStorage.getItem(CHAVE_SESSAO);
   } catch{
-    return null;
+    return { tipo: "ausente" };
   }
+  if(salvo === null) return { tipo: "ausente" };
+
+  let dados: unknown;
+  try{
+    dados = JSON.parse(salvo);
+  } catch{
+    return { tipo: "corrompida" };
+  }
+
+  return sessaoValida(dados) ? { tipo: "valida", sessao: dados } : { tipo: "corrompida" };
+}
+
+export function descartarSessaoSalva(){
+  gravarSessao(null);
 }
 
 export function gravarSessao(sessao: SessaoAtiva | null){
