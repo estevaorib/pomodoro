@@ -1,10 +1,8 @@
 import { presetPadrao, type Preset } from "./preset";
 import type { SessaoAtiva } from "./sessao";
-import { estadoValido, prioridadeValida, tituloValido, type Tarefa } from "./tarefa";
 
 const CHAVE_SESSAO = "pomodoro.sessaoAtiva";
 const CHAVE_PRESETS = "pomodoro.presets";
-const CHAVE_TAREFAS = "pomodoro.tarefas";
 
 function parametrosValidos(dados: unknown){
   if(typeof dados !== "object" || dados === null) return false;
@@ -25,22 +23,6 @@ function presetValido(dados: unknown): dados is Preset{
 
   const preset = dados as Record<string, unknown>;
   return typeof preset.id === "string" && typeof preset.criadoEm === "number";
-}
-
-function tarefaValida(dados: unknown): dados is Tarefa{
-  if(typeof dados !== "object" || dados === null) return false;
-
-  const tarefa = dados as Record<string, unknown>;
-
-  return (
-    typeof tarefa.id === "string" &&
-    typeof tarefa.titulo === "string" &&
-    tituloValido(tarefa.titulo) &&
-    estadoValido(tarefa.estado) &&
-    prioridadeValida(tarefa.prioridade) &&
-    typeof tarefa.criadaEm === "number" &&
-    typeof tarefa.atualizadaEm === "number"
-  );
 }
 
 function sessaoValida(dados: unknown): dados is SessaoAtiva{
@@ -94,20 +76,4 @@ export function lerPresets(): Preset[]{
 
 export function gravarPresets(presets: Preset[]){
   localStorage.setItem(CHAVE_PRESETS, JSON.stringify(presets));
-}
-
-export function lerTarefas(): Tarefa[]{
-  try{
-    const salvo = localStorage.getItem(CHAVE_TAREFAS);
-    if(!salvo) return [];
-
-    const dados: unknown = JSON.parse(salvo);
-    return Array.isArray(dados) ? dados.filter(tarefaValida) : [];
-  } catch{
-    return [];
-  }
-}
-
-export function gravarTarefas(tarefas: Tarefa[]){
-  localStorage.setItem(CHAVE_TAREFAS, JSON.stringify(tarefas));
 }
