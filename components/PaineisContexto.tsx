@@ -17,6 +17,10 @@ export function idPainel(nome: NomePainel){
   return `painel-${nome}`;
 }
 
+export function idTituloPainel(nome: NomePainel){
+  return `titulo-${idPainel(nome)}`;
+}
+
 const CONSULTA_DESKTOP = "(min-width: 64rem)";
 
 type Escolha = { painel: NomePainel | null; desktop: boolean };
@@ -45,10 +49,7 @@ export function PaineisProvider({ children }: { children: ReactNode }){
   const desktop = useSyncExternalStore(assinarTela, telaDesktop, () => true);
   const [escolha, setEscolha] = useState<Escolha | null>(null);
   const origem = useRef<HTMLElement>(null);
-
-  // Todos os painéis começam fechados e só um fica aberto por vez, dividindo a coluna da direita.
-  // A escolha vale para o tamanho de tela em que foi feita: ao cruzar o breakpoint, tudo volta a fechar.
-  const aberto = escolha && escolha.desktop === desktop ? escolha.painel : null;
+  const aberto = escolha && escolha.desktop === desktop ? escolha.painel : desktop ? "tarefas" : null;
 
   const alternar = useCallback(
     (nome: NomePainel, elemento: HTMLElement) => {
@@ -69,8 +70,22 @@ export function usePaineis(){
   return paineis;
 }
 
+function rolarParaTarefas(){
+  document.getElementById(idPainel("tarefas"))?.scrollIntoView({ block: "start" });
+  document.getElementById(idTituloPainel("tarefas"))?.focus({ preventScroll: true });
+}
+
 export function BotaoPainel({ nome, className, children }: { nome: NomePainel; className: string; children: ReactNode }){
-  const { aberto, alternar } = usePaineis();
+  const { aberto, desktop, alternar } = usePaineis();
+
+  // Abaixo de lg as tarefas ficam no fluxo da página, abaixo do temporizador: o botão rola até elas.
+  if(nome === "tarefas" && !desktop){
+    return (
+      <button type="button" onClick={rolarParaTarefas} className={className}>
+        {children}
+      </button>
+    );
+  }
 
   return (
     <button

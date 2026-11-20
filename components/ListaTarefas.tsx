@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type RefObject } from "react";
 import { removerTarefa, useTarefas } from "@/hooks/useTarefas";
-import { nomesEstado, nomesPrioridade, type EstadoTarefa, type PrioridadeTarefa } from "@/lib/tarefa";
+import { nomesEstado, nomesPrioridade, type EstadoTarefa, type PrioridadeTarefa, type Tarefa } from "@/lib/tarefa";
 import BotaoConfirmacao from "./BotaoConfirmacao";
 import FormularioTarefaRapido from "./FormularioTarefaRapido";
 import ModalTarefa from "./ModalTarefa";
-import PainelLateral, { recuoLateral } from "./PainelLateral";
+import { idPainel, idTituloPainel, usePaineis } from "./PaineisContexto";
+import PainelLateral, { CabecalhoPainel, recuoLateral } from "./PainelLateral";
 
 const indicadorPrioridade: Record<PrioridadeTarefa, string> = {
   alta: "bg-primary shadow-[0_0_6px_rgba(90,240,179,0.5)]",
@@ -31,8 +32,53 @@ const reveladoNoHover =
   "transition-opacity lg:pointer-fine:opacity-0 lg:pointer-fine:group-hover:opacity-100 lg:pointer-fine:group-focus-within:opacity-100";
 
 export default function ListaTarefas(){
+  const { desktop } = usePaineis();
   const tarefas = useTarefas();
   const tituloPainel = useRef<HTMLHeadingElement>(null);
+
+  const cabecalho = {
+    nome: "tarefas",
+    sobretitulo: "Planejamento",
+    titulo: "Tarefas",
+    refTitulo: tituloPainel,
+    complemento: tarefas && (
+      <span className="shrink-0 rounded-full border border-outline-variant bg-surface-container px-2.5 py-0.5 font-mono text-[11px] text-on-surface-variant">
+        {tarefas.length} {tarefas.length === 1 ? "tarefa" : "tarefas"}
+      </span>
+    ),
+  } as const;
+
+  if(desktop){
+    return (
+      <PainelLateral {...cabecalho} rotuloFechar="Fechar painel de tarefas" somenteDesktop>
+        <ConteudoTarefas tarefas={tarefas} tituloPainel={tituloPainel} rolavel />
+      </PainelLateral>
+    );
+  }
+
+  return (
+    <section
+      id={idPainel("tarefas")}
+      aria-labelledby={idTituloPainel("tarefas")}
+      className="w-full border-t border-outline-variant/60 bg-surface"
+    >
+      <div className="mx-auto flex w-full max-w-2xl flex-col">
+        <div className={`pt-10 pb-4 ${recuoLateral}`}>
+          <CabecalhoPainel {...cabecalho} />
+        </div>
+        <ConteudoTarefas tarefas={tarefas} tituloPainel={tituloPainel} rolavel={false} />
+      </div>
+    </section>
+  );
+}
+
+type PropsConteudo = {
+  tarefas: Tarefa[] | null;
+  tituloPainel: RefObject<HTMLHeadingElement | null>;
+  rolavel: boolean;
+};
+
+function ConteudoTarefas({ tarefas, tituloPainel, rolavel }: PropsConteudo){
   const [erro, setErro] = useState("");
 
   function excluir(id: string){
@@ -46,20 +92,7 @@ export default function ListaTarefas(){
   }
 
   return (
-    <PainelLateral
-      nome="tarefas"
-      sobretitulo="Planejamento"
-      titulo="Tarefas"
-      rotuloFechar="Fechar painel de tarefas"
-      refTitulo={tituloPainel}
-      complemento={
-        tarefas && (
-          <span className="shrink-0 rounded-full border border-outline-variant bg-surface-container px-2.5 py-0.5 font-mono text-[11px] text-on-surface-variant">
-            {tarefas.length} {tarefas.length === 1 ? "tarefa" : "tarefas"}
-          </span>
-        )
-      }
-    >
+    <>
       <div className={`flex flex-col gap-4 pb-4 ${recuoLateral}`}>
         <FormularioTarefaRapido />
 
@@ -70,7 +103,7 @@ export default function ListaTarefas(){
         )}
       </div>
 
-      <div className={`min-h-0 flex-1 overflow-y-auto pb-6 ${recuoLateral}`}>
+      <div className={`pb-6 ${rolavel ? "min-h-0 flex-1 overflow-y-auto" : ""} ${recuoLateral}`}>
         {tarefas?.length === 0 && (
           <p className="rounded-xl border border-dashed border-outline-variant/70 p-6 text-center text-xs text-on-surface-variant">
             Nenhuma tarefa por aqui. Adicione a primeira acima.
@@ -131,6 +164,6 @@ export default function ListaTarefas(){
           </ul>
         )}
       </div>
-    </PainelLateral>
+    </>
   );
 }
