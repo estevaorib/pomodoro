@@ -1,7 +1,13 @@
 "use client";
 
 import { useRef, useState, type RefObject } from "react";
-import { removerTarefa, useTarefas } from "@/hooks/useTarefas";
+import {
+  descartarTarefasCorrompidas,
+  dispensarAvisoIgnoradas,
+  removerTarefa,
+  useAvisosTarefas,
+  useTarefas,
+} from "@/hooks/useTarefas";
 import { nomesEstado, nomesPrioridade, type EstadoTarefa, type PrioridadeTarefa, type Tarefa } from "@/lib/tarefa";
 import BotaoConfirmacao from "./BotaoConfirmacao";
 import FormularioTarefaRapido from "./FormularioTarefaRapido";
@@ -34,6 +40,7 @@ const reveladoNoHover =
 export default function ListaTarefas(){
   const { desktop } = usePaineis();
   const tarefas = useTarefas();
+  const avisos = useAvisosTarefas();
   const tituloPainel = useRef<HTMLHeadingElement>(null);
 
   const cabecalho = {
@@ -41,7 +48,7 @@ export default function ListaTarefas(){
     sobretitulo: "Planejamento",
     titulo: "Tarefas",
     refTitulo: tituloPainel,
-    complemento: tarefas && (
+    complemento: tarefas && !avisos?.corrompido && (
       <span className="shrink-0 rounded-full border border-outline-variant bg-surface-container px-2.5 py-0.5 font-mono text-[11px] text-on-surface-variant">
         {tarefas.length} {tarefas.length === 1 ? "tarefa" : "tarefas"}
       </span>
@@ -79,7 +86,25 @@ type PropsConteudo = {
 };
 
 function ConteudoTarefas({ tarefas, tituloPainel, rolavel }: PropsConteudo){
+  const avisos = useAvisosTarefas();
   const [erro, setErro] = useState("");
+  const corrompido = avisos?.corrompido ?? false;
+  const ignoradas = avisos?.ignoradas ?? 0;
+
+  function descartar(){
+    try{
+      descartarTarefasCorrompidas();
+      setErro("");
+      tituloPainel.current?.focus();
+    } catch{
+      setErro("Não foi possível descartar os dados no navegador.");
+    }
+  }
+
+  function dispensarAviso(){
+    dispensarAvisoIgnoradas();
+    tituloPainel.current?.focus();
+  }
 
   function excluir(id: string){
     try{
@@ -94,7 +119,59 @@ function ConteudoTarefas({ tarefas, tituloPainel, rolavel }: PropsConteudo){
   return (
     <>
       <div className={`flex flex-col gap-4 pb-4 ${recuoLateral}`}>
-        <FormularioTarefaRapido />
+        {corrompido && (
+          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-error/40 bg-error-container/15 p-3">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-medium text-error">
+                As tarefas salvas estão corrompidas e não puderam ser carregadas.
+              </p>
+              <p className="text-[11px] text-on-surface-variant">
+                Os dados continuam guardados no navegador. Para começar uma lista nova, descarte-os.
+              </p>
+            </div>
+            <BotaoConfirmacao
+              titulo="Descartar dados das tarefas?"
+              mensagem="Os dados de tarefas salvos neste navegador serão apagados permanentemente e a lista começará vazia."
+              rotuloConfirmar="Descartar dados"
+              onConfirmar={descartar}
+              className="self-start rounded-lg border border-error/40 px-3 py-1.5 text-xs font-medium text-error transition-colors hover:bg-error-container/20"
+            >
+              Descartar dados
+            </BotaoConfirmacao>
+          </div>
+        )}
+
+        {ignoradas > 0 && (
+          <div
+            role="status"
+            className="flex items-start gap-2 rounded-lg border border-outline-variant/70 bg-surface-container-low py-2 pr-1 pl-3"
+          >
+            <p className="flex-1 py-1 text-[11px] text-on-surface-variant">
+              {ignoradas === 1
+                ? "1 tarefa inválida foi ignorada."
+                : `${ignoradas} tarefas inválidas foram ignoradas.`}
+            </p>
+            <button
+              type="button"
+              aria-label="Fechar aviso de tarefas ignoradas"
+              title="Fechar aviso"
+              onClick={dispensarAviso}
+              className="flex size-6 shrink-0 items-center justify-center rounded-md text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="size-3.5 fill-current">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        <FormularioTarefaRapido
+          bloqueio={
+            corrompido
+              ? "A criação de tarefas está bloqueada até que os dados corrompidos sejam descartados."
+              : undefined
+          }
+        />
 
         {erro && (
           <p role="alert" className="text-xs text-error">
@@ -104,7 +181,7 @@ function ConteudoTarefas({ tarefas, tituloPainel, rolavel }: PropsConteudo){
       </div>
 
       <div className={`pb-6 ${rolavel ? "min-h-0 flex-1 overflow-y-auto" : ""} ${recuoLateral}`}>
-        {tarefas?.length === 0 && (
+        {tarefas?.length === 0 && !corrompido && (
           <p className="rounded-xl border border-dashed border-outline-variant/70 p-6 text-center text-xs text-on-surface-variant">
             Nenhuma tarefa por aqui. Adicione a primeira acima.
           </p>
