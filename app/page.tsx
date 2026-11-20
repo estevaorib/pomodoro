@@ -1,3 +1,4 @@
+import AvisoSessaoCorrompida from "@/components/AvisoSessaoCorrompida";
 import Guia from "@/components/Guia";
 import ListaTarefas from "@/components/ListaTarefas";
 import Presets from "@/components/Presets";
@@ -7,6 +8,7 @@ export default function Home(){
   return (
     <main className="flex w-full flex-1 pt-16 max-lg:flex-col">
       <div className="flex-1">
+        <AvisoSessaoCorrompida />
         <Timer />
       </div>
       <ListaTarefas />
