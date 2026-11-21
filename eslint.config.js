@@ -15,8 +15,6 @@ export default defineConfig([
     },
   },
   {
-    // Context + hook (padrão "context module") e constantes de estilo compartilhadas entre
-    // componentes-irmãos: exportam mais do que só o componente por design, não por descuido.
     files: ["src/components/PaineisContexto.tsx", "src/components/AvisoSessao.tsx"],
     rules: {
       "react-refresh/only-export-components": "off",
