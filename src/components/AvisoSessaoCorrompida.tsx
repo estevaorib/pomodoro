@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { descartarSessaoCorrompida, useSessaoCorrompida } from "@/hooks/useSessao";
 import AvisoSessao, { estiloBotaoAviso } from "./AvisoSessao";

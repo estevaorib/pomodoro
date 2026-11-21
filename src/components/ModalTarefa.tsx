@@ -1,5 +1,3 @@
-"use client";
-
 import { useId, useRef, type FormEvent, type ReactNode } from "react";
 import { useFormularioTarefa } from "@/hooks/useFormularioTarefa";
 import {

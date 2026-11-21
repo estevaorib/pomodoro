@@ -52,16 +52,32 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-jakarta), sans-serif;
-  --font-mono: var(--font-jetbrains-mono), monospace;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
 html {
+  height: 100%;
   scroll-padding-top: 4rem;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
+  min-height: 100%;
   overscroll-behavior: none;
+  background: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+}
+
+/* No App Router o `<body>` era o container flex (Header fixo + main + Footer);
+   em Vite o `<body>` só contém este nó, então o papel passa para ele. */
+#root {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
 }
 
 ::-webkit-scrollbar {

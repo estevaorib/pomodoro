@@ -1,6 +1,4 @@
-export default async function Footer(){
-  "use cache";
-
+export default function Footer(){
   return (
     <footer className="w-full border-t border-outline-variant/60 bg-surface py-8">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-6 font-mono text-xs text-on-surface-variant max-sm:flex-col">

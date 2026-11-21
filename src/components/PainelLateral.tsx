@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import { idPainel, idTituloPainel, usePaineis, type NomePainel } from "./PaineisContexto";
 

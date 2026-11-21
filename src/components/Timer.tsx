@@ -1,5 +1,3 @@
-"use client";
-
 import { usePresetSelecionado } from "@/hooks/usePresets";
 import { useSessao } from "@/hooks/useSessao";
 import { presetPadrao, type ParametrosPreset } from "@/lib/preset";

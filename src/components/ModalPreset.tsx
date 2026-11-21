@@ -1,5 +1,3 @@
-"use client";
-
 import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import { adicionarPreset, substituirPreset } from "@/hooks/usePresets";
 import {

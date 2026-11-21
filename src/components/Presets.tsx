@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { removerPreset, selecionarPreset, usePresets, usePresetSelecionado } from "@/hooks/usePresets";
 import { iniciarComPreset, useSessaoAtual } from "@/hooks/useSessao";
