@@ -3,7 +3,7 @@
 import { usePresetSelecionado } from "@/hooks/usePresets";
 import { useSessao } from "@/hooks/useSessao";
 import { presetPadrao, type ParametrosPreset } from "@/lib/preset";
-import { duracaoFase, tempoRestante, type Fase } from "@/lib/sessao";
+import { duracaoFase, nomesFase as nomes, tempoRestante, type Fase } from "@/lib/sessao";
 import BotaoConfirmacao from "./BotaoConfirmacao";
 import { BotaoPainel } from "./PaineisContexto";
 
@@ -12,11 +12,7 @@ const CIRCUNFERENCIA = 2 * Math.PI * RAIO;
 
 const fases: Fase[] = ["foco", "pausaCurta", "pausaLonga"];
 
-const nomes: Record<Fase, string> = {
-  foco: "Foco",
-  pausaCurta: "Pausa Curta",
-  pausaLonga: "Pausa Longa",
-};
+export const ID_BOTAO_PRINCIPAL_TIMER = "botao-principal-timer";
 
 const cores: Record<Fase, { texto: string; borda: string; anel: string }> = {
   foco: { texto: "text-primary", borda: "border-primary/20", anel: "stroke-primary-container" },
@@ -144,6 +140,7 @@ export default function Timer(){
           </BotaoConfirmacao>
 
           <button
+            id={ID_BOTAO_PRINCIPAL_TIMER}
             type="button"
             onClick={alternar}
             disabled={semPreset}

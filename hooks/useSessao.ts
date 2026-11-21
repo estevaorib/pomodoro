@@ -16,6 +16,9 @@ let sessaoAtual: SessaoAtiva | null = null;
 let carregada = false;
 // Dado salvo ilegível: fica preservado no localStorage até ser descartado ou sobrescrito por uma sessão nova.
 let sessaoCorrompida = false;
+// Sessão ativa retomada do localStorage ao abrir a página, ainda sem resposta do usuário (RF-13).
+// Exclusiva com `sessaoCorrompida`: as duas vêm da mesma leitura.
+let sessaoRestaurada = false;
 const ouvintes = new Set<() => void>();
 
 function notificar(){
@@ -29,6 +32,8 @@ function obterSessao(){
     if(leitura.tipo === "valida"){
       sessaoAtual = sincronizar(leitura.sessao, Date.now()).sessao;
       gravarSessao(sessaoAtual);
+      // Sessão que terminou inteira com a página fechada (RN-08) não é oferecida para retomar.
+      sessaoRestaurada = sessaoAtual.status !== "concluida";
     } else if(leitura.tipo === "corrompida"){
       sessaoCorrompida = true;
     }
@@ -41,11 +46,31 @@ function obterSessaoCorrompida(){
   return sessaoCorrompida;
 }
 
+function obterSessaoRestaurada(){
+  obterSessao();
+  return sessaoRestaurada;
+}
+
 function definirSessao(sessao: SessaoAtiva | null){
+  // Encerrar, iniciar outra ou concluir tiram o banner; pausar, retomar e pular fase (mesmo id) não.
+  if(!sessao || sessao.id !== sessaoAtual?.id || sessao.status === "concluida") sessaoRestaurada = false;
   sessaoAtual = sessao;
   gravarSessao(sessao);
   // Depois de gravar (ou remover), a chave não guarda mais o dado corrompido.
   sessaoCorrompida = false;
+  notificar();
+}
+
+export function manterSessaoRestaurada(){
+  sessaoRestaurada = false;
+  notificar();
+}
+
+// Remove primeiro do localStorage: se falhar, o erro propaga e a sessão continua intacta na memória.
+export function descartarSessaoRestaurada(){
+  descartarSessaoSalva();
+  sessaoAtual = null;
+  sessaoRestaurada = false;
   notificar();
 }
 
@@ -73,6 +98,10 @@ export function useSessaoAtual(){
 
 export function useSessaoCorrompida(){
   return useSyncExternalStore(assinar, obterSessaoCorrompida, () => false);
+}
+
+export function useSessaoRestaurada(){
+  return useSyncExternalStore(assinar, obterSessaoRestaurada, () => false);
 }
 
 export function useSessao(){

@@ -18,6 +18,12 @@ export type SessaoAtiva = {
   atualizadaEm: number;
 };
 
+export const nomesFase: Record<Fase, string> = {
+  foco: "Foco",
+  pausaCurta: "Pausa Curta",
+  pausaLonga: "Pausa Longa",
+};
+
 const MINUTO = 60_000;
 
 export function duracaoFase(snapshot: ParametrosPreset, fase: Fase){
