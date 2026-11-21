@@ -5,7 +5,6 @@ const links: ({ href: string; label: string } | { painel: NomePainel; label: str
   { href: "#temporizador", label: "Temporizador" },
   { painel: "tarefas", label: "Tarefas" },
   { painel: "presets", label: "Presets" },
-  { painel: "guia", label: "Guia" },
 ];
 
 export default function Header(){

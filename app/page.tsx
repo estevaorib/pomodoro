@@ -1,6 +1,5 @@
 import AvisoSessaoCorrompida from "@/components/AvisoSessaoCorrompida";
 import AvisoSessaoRestaurada from "@/components/AvisoSessaoRestaurada";
-import Guia from "@/components/Guia";
 import ListaTarefas from "@/components/ListaTarefas";
 import Presets from "@/components/Presets";
 import Timer from "@/components/Timer";
@@ -15,7 +14,6 @@ export default function Home(){
       </div>
       <ListaTarefas />
       <Presets />
-      <Guia />
     </main>
   );
 }

@@ -11,7 +11,7 @@ import {
   type RefObject,
 } from "react";
 
-export type NomePainel = "tarefas" | "presets" | "guia";
+export type NomePainel = "tarefas" | "presets";
 
 export function idPainel(nome: NomePainel){
   return `painel-${nome}`;
